@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, url_for
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 import pickle
 import pandas as pd
 import numpy as np
@@ -9,21 +8,6 @@ import os
 from waitress import serve
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'super-secret-key'
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-class User(UserMixin):
-    def __init__(self, id):
-        self.id = id
-
-def check_credentials(username, password):
-    return username == "admin" and password == "penisamusk"
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User(user_id)
 
 numeric_columns = ['volume_total', 'somme_largeur', 'somme_hauteur', 'somme_profondeur', 'max_largeur', 'max_hauteur', 'max_profondeur', 'boite_largeur','boite_hauteur','boite_profondeur']
 
@@ -93,16 +77,6 @@ def generate_unique_filename(prefix=""):
 @app.route('/')
 def home():
     return redirect('/login')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if username == 'admin' and password == 'lateubamusk':
-            login_user(User(1))
-            return redirect(url_for('index'))  # Redirection vers la page d'accueil
-    return render_template('login.html')
 
 
 @app.route('/dashboard')
