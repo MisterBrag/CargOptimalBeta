@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimisation des dimensions de boîte</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles1.css') }}">
+    
+</head>
+<body>
+    <header>
+        <h1>Étape 3 : Entrainement du modèle IA </h1>
+    </header>
+
+    <h2>Étape 3: Charger le fichier CSV</h2>
+<form id="train_form" action="/train_sa" method="post" enctype="multipart/form-data">
+    <label for="file">Sélectionnez un fichier CSV :</label>
+    <input type="file" id="file" name="file" accept=".csv" required><br><br>
+    <input type="submit" value="Entraîner" aria-label="Bouton pour entraîner le modèle">
+    <br></br>
+    <div id="train_result"></div>
+    <div id="loading_spinner" style="display: none;">
+    <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Chargement...">
+    <span>Entraînement en cours...</span>
+    </div>
+</form>
+
+
+    <a href="/analyse_resultats" class="button btn btn-primary">Revenir à l'étape précédente</a>
+    <a href="/prediction" class="button btn btn-primary">Passer à la prédiction</a>
+
+    <script>
+
+document.getElementById('train_form').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Créer un objet FormData pour collecter les données du formulaire
+    const formData = new FormData(event.target);
+
+    // Afficher l'indicateur de chargement
+    document.getElementById('loading_spinner').style.display = 'block';
+
+    // Envoyer les données du formulaire via AJAX
+    fetch('/train_sa', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(result => {
+        // Ajouter un délai artificiel avant de masquer l'indicateur de chargement
+        setTimeout(() => {
+            // Masquer l'indicateur de chargement
+            document.getElementById('loading_spinner').style.display = 'none';
+
+            // Afficher le résultat dans un élément HTML sur la même page
+            document.getElementById('train_result').innerHTML = result;
+        }, 1000); // (1000 ms = 1 secondes)
+    })
+    .catch(error => {
+        // Masquer l'indicateur de chargement en cas d'erreur
+        document.getElementById('loading_spinner').style.display = 'none';
+        
+        console.error('Erreur lors de l\'envoi du formulaire:', error);
+    });
+});
+
+
+    </script>
+</body>
+</html>
+

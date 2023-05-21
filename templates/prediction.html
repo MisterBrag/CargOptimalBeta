@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles1.css') }}">
+    <title>Prédiction des dimensions optimales</title>
+    <style>
+        #predict_result {
+            border: 1px solid #000;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+    <h1> Étape 4 : Prédire les dimensions de la boîte</h1>
+    </header>
+
+    <h3> Evaluation de la boite optimale pour le panier moyen de votre boutique </h3>
+    <form id="predict_form" action="/predict_sa" method="post">
+        <label for="num_products">Le panier moyen est composé de X produits :</label>
+        <input type="number" id="num_products" name="num_products" min="1" required><br><br>
+      
+        <label for="file_box_dims">Fichier de dimensions de la boîte : (optimal_box_dims_XXX)</label>
+        <input type="file" id="file_box_dims" name="file_box_dims" required><br><br>
+      
+        <div id="product_dimensions"></div>
+        <input type="submit" value="Prédire">
+        <br></br>
+        <div id="predict_result">
+            <h2>Résultats:</h2>
+        <div id="result_content"></div>
+    </div>
+        <div id="loading_spinner_predict" style="display: none;">
+        <img src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/0.16.1/images/loader-large.gif" alt="Chargement...">
+        <span>Prédiction en cours...</span>
+    </div>
+</form>
+
+    <a href="/optimisation" class="button btn btn-primary">Revenir à l'étape précédente</a>
+    <a href="/documentation" class="button btn btn-primary">Passer à la documentation</a>
+
+    <script>
+    document.getElementById('num_products').addEventListener('input', function () {
+    let numProducts = this.value;
+    let container = document.getElementById('product_dimensions');
+    container.innerHTML = '';
+
+    for (let i = 1; i <= numProducts; i++) {
+        let label = document.createElement('label');
+        label.textContent = `Dimensions du produit ${i} (largeur x hauteur x profondeur) :`;
+        container.appendChild(label);
+        container.appendChild(document.createElement('br'));
+
+        let inputWidth = document.createElement('input');
+        inputWidth.type = 'number';
+        inputWidth.name = `product_width_${i}`;
+        inputWidth.step = '0.01';
+        inputWidth.required = true;
+        container.appendChild(inputWidth);
+
+        let inputHeight = document.createElement('input');
+        inputHeight.type = 'number';
+        inputHeight.name = `product_height_${i}`;
+        inputHeight.step = '0.01';
+        inputHeight.required = true;
+        container.appendChild(inputHeight);
+
+        let inputDepth = document.createElement('input');
+        inputDepth.type = 'number';
+        inputDepth.name = `product_depth_${i}`;
+        inputDepth.step = '0.01';
+        inputDepth.required = true;
+        container.appendChild(inputDepth);
+
+        container.appendChild(document.createElement('br'));
+        container.appendChild(document.createElement('br'));
+    }
+});
+
+document.getElementById('predict_form').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Créer un objet FormData pour collecter les données du formulaire
+    const formData = new FormData(event.target);
+
+    // Afficher l'indicateur de chargement
+    document.getElementById('loading_spinner_predict').style.display = 'block';
+
+    // Envoyer les données du formulaire via AJAX
+    fetch('/predict_sa', {
+    method: 'POST',
+    body: formData
+})
+.then(response => response.json())
+.then(result => {
+    setTimeout(() => {
+        document.getElementById('loading_spinner_predict').style.display = 'none';
+        document.getElementById('predict_result').style.display = 'block';
+
+        // Vous pouvez ajouter ici le code pour insérer les résultats dans des éléments HTML
+        // Par exemple :
+        const boxDims = result.box_dimensions;
+        const forecast = result.forecast;
+        const message = result.message;
+        
+        // Créez un format de texte pour afficher les résultats de manière lisible
+        let resultText = `
+    📦 Dimensions optimales de la boîte pour 2 produit(s) : ${(boxDims.length).toFixed(1)} x ${(boxDims.width).toFixed(1)} x ${(boxDims.height).toFixed(1)}
+    💰 Pour 100 colis envoyés, vous économisez : ${forecast.savings} €
+    🌳 Nombre d'arbres sauvés : ${forecast.trees_saved}
+    🚀 Basé sur les 250 colis que vous avez envoyés l'année dernière, et une prévision de 450 colis cette année, vous pourriez économiser jusqu'à ${(forecast.forecasted_savings).toFixed(1)} € et sauver jusqu'à ${(forecast.forecasted_trees_saved).toFixed(1)} arbres.
+    Merci de contribuer à un avenir plus durable ! 🌍💚
+`;
+
+        
+        document.getElementById('result_content').innerText = resultText;
+    }, 2000); 
+})
+    .catch(error => {
+        // Masquer l'indicateur de chargement en cas d'erreur
+        document.getElementById('loading_spinner_predict').style.display = 'none';
+        
+        console.error('Erreur lors de l\'envoi du formulaire:', error);
+    });
+});
+
+    </script>
+</body>
+</html>
+

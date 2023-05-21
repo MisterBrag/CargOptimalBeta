@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles2.css') }}">
+    <title>Calcul des caractéristiques cumulées</title>
+</head>
+<body>
+    <header>
+        <h1>Étape 1 : Calcul des caractéristiques cumulées</h1>
+    </header>
+    <div class="container">
+        <div class="step">
+            <label for="num_boxes">Nombre de boîtes optimisées :</label>
+            <input type="number" id="num_boxes" min="1"><br><br>
+        </div>
+        <div class="step" id="box_groups">
+            <p style=" color : black" >Merci de bien utilisé des points "." et non des virgules ","  dans les champs des dimensions.</p>
+        </div>
+        <div class="step" id="aggregated_features_container">
+            <button class="button button-black" onclick="calculateAndDownload()">Calculer et télécharger les résultats</button>
+        </div>
+
+        <div class="step">
+            <a href="/dashboard" class="button">Revenir à la page d'accueil</a>
+            <a href="/analyse_resultats" class="button">Passer à la page suivante</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('num_boxes').addEventListener('input', function() {
+            const numBoxes = parseInt(this.value);
+            const boxGroupsContainer = document.getElementById('box_groups');
+            boxGroupsContainer.textContent = '';
+
+            for (let i = 1; i <= numBoxes; i++) {
+                const boxGroup = document.createElement('div');
+                boxGroup.id = `box_group_${i}`;
+                boxGroup.className = 'box-group';
+                boxGroup.innerHTML = `
+                    <h3>Boîte optimisée ${i}</h3>
+                    <label for="num_products_${i}">Nombre de produits :</label>
+                    <input type="number" id="num_products_${i}" class="num_products" min="1"><br><br>
+                    <div class="product_dimensions"></div>
+                    <label>Dimensions de la boite optimisée ${i} (largeur x hauteur x profondeur) :</label><br>
+                    <input type="number" class="box_width" min="0"> x
+                    <input type="number" class="box_height" min="0"> x
+                    <input type="number" class="box_depth" min="0"><br><br>
+                `;
+                boxGroupsContainer.appendChild(boxGroup);
+            }
+        });
+
+        document.getElementById('box_groups').addEventListener('input', function(event) {
+            if (event.target.classList.contains('num_products')) {
+                const boxGroup = event.target.parentElement;
+                const numProducts = parseInt(event.target.value);
+                const productDimensionsContainer = boxGroup.querySelector('.product_dimensions');
+                productDimensionsContainer.textContent = '';
+
+                for (let i = 1; i <= numProducts; i++) {
+                    const label = document.createElement('label');
+                    label.textContent = `Dimensions du produit ${i} (largeur x hauteur x profondeur) :`;
+                    productDimensionsContainer.appendChild(label);
+                    productDimensionsContainer.appendChild(document.createElement('br'));
+
+                    const inputWidth = document.createElement('input');
+                    inputWidth.type = 'number';
+                    inputWidth.className = 'width';
+                    inputWidth.min = '0';
+                    productDimensionsContainer.appendChild(inputWidth);
+
+                    const inputHeight = document.createElement('input');
+                    inputHeight.type = 'number';
+                    inputHeight.className = 'height';
+                    inputHeight.min = '0';
+                    productDimensionsContainer.appendChild(inputHeight);
+
+                    const inputDepth = document.createElement('input');
+                    inputDepth.type = 'number';
+                    inputDepth.className = 'depth';
+                    inputDepth.min = '0';
+                    productDimensionsContainer.appendChild(inputDepth);
+
+                    productDimensionsContainer.appendChild(document.createElement('br'));
+                    productDimensionsContainer.appendChild(document.createElement('br'));
+                }
+            }
+        });
+
+        function calculateAggregatedFeatures() {
+    const boxGroups = document.querySelectorAll('.box-group');
+    const aggregatedFeatures = [];
+
+    boxGroups.forEach((boxGroup) => {
+        const productDimensions = boxGroup.querySelectorAll('.product_dimensions input.width, .product_dimensions input.height, .product_dimensions input.depth');
+
+        let totalVolume = 0;
+        let sumWidth = 0;
+        let sumHeight = 0;
+        let sumDepth = 0;
+        let maxWidth = 0;
+        let maxHeight = 0;
+        let maxDepth = 0;
+
+        for (let i = 0; i < productDimensions.length; i += 3) {
+            const width = parseFloat(productDimensions[i].value);
+            const height = parseFloat(productDimensions[i + 1].value);
+            const depth = parseFloat(productDimensions[i + 2].value);
+
+            totalVolume += width * height * depth;
+            sumWidth += width;
+            sumHeight += height;
+            sumDepth += depth;
+            maxWidth = Math.max(maxWidth, width);
+            maxHeight = Math.max(maxHeight, height);
+            maxDepth = Math.max(maxDepth, depth);
+        }
+
+        aggregatedFeatures.push({
+            totalVolume,
+            sumWidth,
+            sumHeight,
+            sumDepth,
+            maxWidth,
+            maxHeight,
+            maxDepth
+        });
+    });
+
+    return aggregatedFeatures;
+}
+
+
+
+async function calculateAndDownload() {
+    const aggregatedFeatures = calculateAggregatedFeatures();
+    const csvContent = ['volume_total;somme_largeur;somme_hauteur;somme_profondeur;max_largeur;max_hauteur;max_profondeur;boite_largeur;boite_hauteur;boite_profondeur'];
+
+    aggregatedFeatures.forEach((feature, index) => {
+        const boxWidth = document.querySelector(`#box_group_${index + 1} .box_width`).value;
+        const boxHeight = document.querySelector(`#box_group_${index + 1} .box_height`).value;
+        const boxDepth = document.querySelector(`#box_group_${index + 1} .box_depth`).value;
+
+        csvContent.push(`${feature.totalVolume};${feature.sumWidth};${feature.sumHeight};${feature.sumDepth};${feature.maxWidth};${feature.maxHeight};${feature.maxDepth};${boxWidth};${boxHeight};${boxDepth}`);
+    });
+
+    const blob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'training_data.csv';
+    link.click();
+    setTimeout(() => {
+    URL.revokeObjectURL(url);
+}, 100);
+}
+
+</script>
+</body>
+</html>

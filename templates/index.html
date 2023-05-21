@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+    <title>CargOptimal Web - Optimisation des dimensions des boîtes</title>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+        </div>
+        <div class="title">
+            <h1>CargOptimal Shopify</h1>
+            <p>Optimisation des dimensions des boîtes</p>
+        </div>
+    </div>
+    <main>
+        <section class="container">
+            <h2>Pour les utilisateurs qui doivent créer et entraîner un modèle</h2>
+            <div class="step-card">
+                <h3>Étape 1 : Calcul des caractéristiques cumulées</h3>
+                <p>Commencez par calculer les caractéristiques cumulées des produits et des boîtes optimisées pour créer un fichier de données d'entraînement.</p>
+                <a href="/calcul_caracteristiques" class="cta-button">Accéder à l'étape 1</a>
+            </div>
+            <div class="step-card">
+                <h3>Étape 2 : Analyse des résultats</h3>
+                <p>Analysez les résultats pour évaluer l'efficacité des dimensions des boîtes et apporter des améliorations si nécessaire.</p>
+                <a href="/analyse_resultats" class="cta-button">Accéder à l'étape 2</a>
+            </div>
+            <div class="step-card">
+                <h3>Étape 3 : Entraîner le modèle</h3>
+                <p>Entraînez le modèle d'optimisation en utilisant l'algorithme du recuit simulé et les données d'entraînement générées précédemment.</p>
+                <a href="/optimisation" class="cta-button">Accéder à l'étape 3</a>
+            </div>
+        </section>
+        <section class="container">
+            <h2>Pour les utilisateurs qui ont déjà un modèle entraîné</h2>
+            <div class="step-card">
+                <h3>Étape 4 : Prédire les dimensions optimales</h3>
+                <p>Utilisez le modèle entraîné pour prédire les dimensions optimales des boîtes pour de nouveaux produits ou commandes.</p>
+                <a href="/prediction" class="cta-button">Accéder à l'étape 4</a>
+            </div>
+        </section>
+        <section class="container">
+            <h2>Téléchargement : Modèle Community</h2>
+            <div class="step-card">
+                <h3>Modèles pré-entraînés disponibles au téléchargement</h3>
+                <p>Vous pouvez télécharger l'un de nos modèles pré-entraînés pour gagner du temps.</p>
+                <a href="/model" class="cta-button">Accéder aux modèles</a>
+            </div>
+        </section>
+        <section class="container">
+            <div class="step-card">
+                <h2>Support et documentation</h2>
+                <p>Consultez notre documentation et notre centre d'aide pour en savoir plus sur l'utilisation de l'application et obtenir un support technique.</p>
+                <a href="/documentation" class="cta-button">Accéder au support et à la documentation</a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 CargOptimal Shopify - Tous droits réservés</p>
+    </footer>
+</body>
+</html>
+

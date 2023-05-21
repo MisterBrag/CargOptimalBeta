@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse des résultats</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles4.css') }}">
+</head>
+
+<body>
+
+    <header>
+        <h1>Étape 2 : Analyse des résultats</h1>
+    </header>
+    <p>
+        À cette étape, nous analyserons les résultats pour évaluer l'efficacité de l'optimisation des dimensions des boîtes et pour apporter des améliorations si nécessaire. Vous aurez besoin du fichier CSV avec les résultats de l'optimisation.
+    </p>
+
+    <div class="form-group">
+        <label for="upload-csv">Uploader votre fichier CSV avec les résultats :</label>
+        <input type="file" class="form-control-file" id="upload-csv" accept=".csv">
+    </div>
+
+    <div id="results-container" class="mt-4">
+        <!-- Les résultats de l'analyse seront affichés ici -->
+    </div>
+
+    <div class="mt-4">
+        <a href="/calcul_caracteristiques" class="button">Revenir à l'étape précédente</a>
+        <a href="/optimisation" class="button">Passer à l'étape suivante</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('upload-csv').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = e.target.result;
+                const csvLines = data.split('\n');
+                const resultsContainer = document.getElementById('results-container');
+                resultsContainer.textContent = '';
+                
+                let totalEfficiency = 0;
+
+                for (let i = 1; i < csvLines.length; i++) {
+                    const line = csvLines[i];
+                    const values = line.split(';');
+
+                    if (values.length >= 10) {
+                        const boxNumber = i;
+                        const totalVolume = parseFloat(values[0]);
+                        const boxVolume = parseFloat(values[7]) * parseFloat(values[8]) * parseFloat(values[9]);
+                        const efficiency = (totalVolume / boxVolume) * 100;
+                        totalEfficiency += efficiency;
+
+                        const resultElement = document.createElement('p');
+                        resultElement.innerHTML = `Boîte ${boxNumber} : Efficacité de l'optimisation = ${efficiency.toFixed(2)} %`;
+                        resultsContainer.appendChild(resultElement);
+                    }
+                }
+                
+                const totalEfficiencyElement = document.createElement('p');
+                totalEfficiencyElement.innerHTML = `Efficacité de l'optimisation total = ${(totalEfficiency / (csvLines.length - 1)).toFixed(2)} %`;
+                totalEfficiencyElement.style.fontWeight = 'bold';
+
+                const totalEfficiencyAvg = totalEfficiency / (csvLines.length - 1);
+                if (totalEfficiencyAvg < 50 || totalEfficiencyAvg > 75) {
+                    totalEfficiencyElement.style.color = 'red';
+                } else {
+                    totalEfficiencyElement.style.color = 'green';
+                }
+
+                resultsContainer.appendChild(totalEfficiencyElement);
+            };
+
+            reader.readAsText(file);
+        });
+    </script>
+
+</body>
+</html>
