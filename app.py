@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, url_for
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 import pickle
 import pandas as pd
 import numpy as np
@@ -8,6 +9,23 @@ import os
 from waitress import serve
 
 app = Flask(__name__)
+app.secret_key = 'secret-key'  # Remplacez ceci par une vraie clé secrète
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+class User(UserMixin):
+    pass
+
+@login_manager.user_loader
+def user_loader(username):
+    if username != 'admin':
+        return
+
+    user = User()
+    user.id = username
+    return user
 
 numeric_columns = ['volume_total', 'somme_largeur', 'somme_hauteur', 'somme_profondeur', 'max_largeur', 'max_hauteur', 'max_profondeur', 'boite_largeur','boite_hauteur','boite_profondeur']
 
@@ -73,6 +91,26 @@ def load_optimal_box_dims():
 def generate_unique_filename(prefix=""):
     unique_id = uuid.uuid4()
     return f"{prefix}_{unique_id}.pickle"
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if username == 'admin' and password == 'elonteub': 
+            user = User()
+            user.id = username
+            login_user(user)
+            return redirect(url_for('index'))
+
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/')
 def home():
