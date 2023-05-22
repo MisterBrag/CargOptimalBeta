@@ -23,7 +23,7 @@
     </header>
 
     <h3> Evaluation de la boite optimale pour le panier moyen de votre boutique </h3>
-    <form id="predict_form" action="/predict_sa" method="post">
+    <form id="predict_form" action="/predict_sa" method="post" enctype="multipart/form-data">
         <label for="num_products">Le panier moyen est composé de X produits :</label>
         <input type="number" id="num_products" name="num_products" min="1" required><br><br>
       
@@ -47,8 +47,9 @@
     <a href="/documentation" class="button btn btn-primary">Passer à la documentation</a>
 
     <script>
+    let numProducts;
     document.getElementById('num_products').addEventListener('input', function () {
-    let numProducts = this.value;
+    numProducts = this.value;
     let container = document.getElementById('product_dimensions');
     container.innerHTML = '';
 
@@ -84,6 +85,7 @@
     }
 });
 
+
 document.getElementById('predict_form').addEventListener('submit', function (event) {
     event.preventDefault();
 
@@ -104,21 +106,18 @@ document.getElementById('predict_form').addEventListener('submit', function (eve
         document.getElementById('loading_spinner_predict').style.display = 'none';
         document.getElementById('predict_result').style.display = 'block';
 
-        // Vous pouvez ajouter ici le code pour insérer les résultats dans des éléments HTML
-        // Par exemple :
         const boxDims = result.box_dimensions;
         const forecast = result.forecast;
         const message = result.message;
         
         // Créez un format de texte pour afficher les résultats de manière lisible
         let resultText = `
-    📦 Dimensions optimales de la boîte pour 2 produit(s) : ${(boxDims.length).toFixed(1)} x ${(boxDims.width).toFixed(1)} x ${(boxDims.height).toFixed(1)}
-    💰 Pour 100 colis envoyés, vous économisez : ${forecast.savings} €
-    🌳 Nombre d'arbres sauvés : ${forecast.trees_saved}
-    🚀 Basé sur les 250 colis que vous avez envoyés l'année dernière, et une prévision de 450 colis cette année, vous pourriez économiser jusqu'à ${(forecast.forecasted_savings).toFixed(1)} € et sauver jusqu'à ${(forecast.forecasted_trees_saved).toFixed(1)} arbres.
+    📦 Dimensions optimales de la boîte pour ${numProducts} produit(s) : ${boxDims.length.toFixed(1)} x ${boxDims.width.toFixed(1)} x ${boxDims.height.toFixed(1)}
+    💰 Pour 100 colis envoyés, vous économisez : ${forecast.savings.toFixed(2)} €
+    🌳 Nombre d'arbres sauvés : ${forecast.trees_saved.toFixed(1)}
+    🚀 Basé sur les 250 colis que vous avez envoyés l'année dernière, et sur vos ventes actuelles, une prévision de 450 colis cette année, vous pourriez économiser jusqu'à ${forecast.forecasted_savings.toFixed(2)} € et sauver jusqu'à ${forecast.forecasted_trees_saved.toFixed(1)} arbres.
     Merci de contribuer à un avenir plus durable ! 🌍💚
 `;
-
         
         document.getElementById('result_content').innerText = resultText;
     }, 2000); 
