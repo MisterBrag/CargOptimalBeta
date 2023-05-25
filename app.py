@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 import uuid
 import os
-from waitress import serve
+#from waitress import serve
 
 app = Flask(__name__)
 
@@ -47,8 +47,8 @@ def get_box_dims(data):
 # Entraîner le modèle
 def train_model(data):
     # Sélectionnez les colonnes de caractéristiques et la cible
-    features = data.iloc[:, :7]  # Select all columns till 6th column (from volume_total to max_profondeur)
-    target = data.iloc[:, 7:]  # Select all columns from 7th till end (from boite_largeur to boite_profondeur)
+    features = data.iloc[:, :7]  # Select all columns (from volume_total to max_profondeur)
+    target = data.iloc[:, 7:10]  # Select all columns  (from boite_largeur to boite_profondeur)
 
     # Entraînez le modèle
     model = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -76,7 +76,7 @@ def generate_unique_filename(prefix=""):
 
 @app.route('/')
 def home():
-    return redirect('/login')
+    return redirect('/dashboard')
 
 
 @app.route('/dashboard')
@@ -137,7 +137,8 @@ def download_file(filename):
 
 @app.route('/predict_sa', methods=['POST'])
 def predict_sa():
-     # Récupérer les données du formulaire
+
+    # Récupérer les données du formulaire
     form_data = request.form.to_dict()
 
     # Calculer le nombre de produits
@@ -154,9 +155,9 @@ def predict_sa():
         height = float(form_data[f"product_height_{i}"])
         depth = float(form_data[f"product_depth_{i}"])
 
-        volume_total += width * height * depth
-        sum_dims = [sum_dims[j] + val for j, val in enumerate([width, height, depth])]
-        max_dims = [max(max_dims[j], val) for j, val in enumerate([width, height, depth])]
+    volume_total += width * height * depth
+    sum_dims = [sum_dims[j] + val for j, val in enumerate([width, height, depth])]
+    max_dims = [max(max_dims[j], val) for j, val in enumerate([width, height, depth])]
 
     # Construire le vecteur de caractéristiques
     x = [volume_total] + sum_dims + max_dims
@@ -170,17 +171,6 @@ def predict_sa():
 
     # Faire la prédiction
     y_pred = optimal_box_dims.predict(X)
-
-    # Construction de la réponse
-    result = {
-        'box_dimensions': {
-            'length': y_pred[0][0],
-            'width': y_pred[0][1],
-            'height': y_pred[0][2]
-        }
-    }
-
-
 
     # Ajouter ici les informations sur le coût des boîtes et la quantité de matière utilisée
     custom_box_cost = 0.50  # Par exemple
@@ -200,22 +190,21 @@ def predict_sa():
     forecasted_savings = (standard_box_cost - custom_box_cost) * forecasted_shipments
     forecasted_trees_saved = (standard_box_material - custom_box_material) * forecasted_shipments * trees_saved_per_m2
 
-    result['forecast'] = {
-        'savings': savings,
-        'trees_saved': trees_saved,
-        'forecasted_savings': forecasted_savings,
-        'forecasted_trees_saved': forecasted_trees_saved
+    result = {
+        'box_dimensions': {
+            'length': y_pred[0][0],
+            'width': y_pred[0][1],
+            'height': y_pred[0][2]
+        },
+        'forecast': {
+            'savings': savings,
+            'trees_saved': trees_saved,
+            'forecasted_savings': forecasted_savings,
+            'forecasted_trees_saved': forecasted_trees_saved
+        },
     }
 
-    result['message'] = f'''
-    📦 Dimensions optimales de la boîte pour {num_products} produit(s) : {y_pred[0][0]:.1f} x {y_pred[0][1]:.1f} x {y_pred[0][2]:.1f}
-    💰 Pour 100 colis envoyés, vous économisez : {savings} €
-    🌳 Nombre d'arbres sauvés : {trees_saved} <br/>
-    🚀 Basé sur les 250 colis que vous avez envoyés l'année dernière, et une prévision de 450 colis cette année, vous pourriez économiser jusqu'à {forecasted_savings} € et sauver jusqu'à {forecasted_trees_saved} arbres.
-    Merci de contribuer à un avenir plus durable ! 🌍💚
-    '''
-
-    return jsonify(result), 200
+    return jsonify(result), 200    
 
 @app.route('/analyse_resultats')
 def analyse_resultats():
@@ -230,6 +219,5 @@ def documentation():
     return render_template('documentation.html')
 
 if __name__ == '__main__':
-    serve(app, host="0.0.0.0", port=8080)
-
-    #app.run(debug=True)
+    #serve(app, host="0.0.0.0", port=8080)
+    app.run(debug=True)

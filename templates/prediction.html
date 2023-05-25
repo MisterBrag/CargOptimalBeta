@@ -23,11 +23,11 @@
     </header>
 
     <h3> Evaluation de la boite optimale pour le panier moyen de votre boutique </h3>
-    <form id="predict_form" action="/predict_sa" method="post">
+    <form id="predict_form" action="/predict_sa" method="post" enctype="multipart/form-data">
         <label for="num_products">Le panier moyen est composé de X produits :</label>
         <input type="number" id="num_products" name="num_products" min="1" required><br><br>
       
-        <label for="file_box_dims">Fichier de dimensions de la boîte : (optimal_box_dims_XXX)</label>
+        <label for="file_box_dims">Fichier de dimensions de la boîte : (trained_model_XXX)</label>
         <input type="file" id="file_box_dims" name="file_box_dims" required><br><br>
       
         <div id="product_dimensions"></div>
@@ -47,8 +47,9 @@
     <a href="/documentation" class="button btn btn-primary">Passer à la documentation</a>
 
     <script>
+    let numProducts;
     document.getElementById('num_products').addEventListener('input', function () {
-    let numProducts = this.value;
+    numProducts = this.value;
     let container = document.getElementById('product_dimensions');
     container.innerHTML = '';
 
@@ -84,46 +85,65 @@
     }
 });
 
+
 document.getElementById('predict_form').addEventListener('submit', function (event) {
     event.preventDefault();
 
     // Créer un objet FormData pour collecter les données du formulaire
     const formData = new FormData(event.target);
 
+    // Calculer le volume total des produits et ajouter 20% d'espace supplémentaire
+    let totalVolume = 0;
+    for (let i = 1; i <= numProducts; i++) {
+        const width = formData.get(`product_width_${i}`);
+        const height = formData.get(`product_height_${i}`);
+        const depth = formData.get(`product_depth_${i}`);
+        totalVolume += width * height * depth;
+    }
+    totalVolume *= 1.2;
+
+    // Convertir le volume total en dimensions de boîte (longueur, largeur, hauteur)
+    const boxSide = Math.cbrt(totalVolume);
+    const minBoxDims = {length: boxSide, width: boxSide, height: boxSide};
+
     // Afficher l'indicateur de chargement
     document.getElementById('loading_spinner_predict').style.display = 'block';
 
     // Envoyer les données du formulaire via AJAX
     fetch('/predict_sa', {
-    method: 'POST',
-    body: formData
-})
-.then(response => response.json())
-.then(result => {
-    setTimeout(() => {
-        document.getElementById('loading_spinner_predict').style.display = 'none';
-        document.getElementById('predict_result').style.display = 'block';
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        setTimeout(() => {
+            document.getElementById('loading_spinner_predict').style.display = 'none';
+            document.getElementById('predict_result').style.display = 'block';
 
-        // Vous pouvez ajouter ici le code pour insérer les résultats dans des éléments HTML
-        // Par exemple :
-        const boxDims = result.box_dimensions;
-        const forecast = result.forecast;
-        const message = result.message;
-        
-        // Créez un format de texte pour afficher les résultats de manière lisible
-        let resultText = `
-    📦 Dimensions optimales de la boîte pour 2 produit(s) : ${(boxDims.length).toFixed(1)} x ${(boxDims.width).toFixed(1)} x ${(boxDims.height).toFixed(1)}
-    💰 Pour 100 colis envoyés, vous économisez : ${forecast.savings} €
-    🌳 Nombre d'arbres sauvés : ${forecast.trees_saved}
-    🚀 Basé sur les 250 colis que vous avez envoyés l'année dernière, et une prévision de 450 colis cette année, vous pourriez économiser jusqu'à ${(forecast.forecasted_savings).toFixed(1)} € et sauver jusqu'à ${(forecast.forecasted_trees_saved).toFixed(1)} arbres.
-    Merci de contribuer à un avenir plus durable ! 🌍💚
-`;
+            let boxDims = result.box_dimensions;
 
-        
-        document.getElementById('result_content').innerText = resultText;
-    }, 2000); 
-})
+            // Si les dimensions de la boîte prédite sont plus petites que les dimensions minimales calculées, utilisez les dimensions minimales
+            if (boxDims.length < minBoxDims.length || boxDims.width < minBoxDims.width || boxDims.height < minBoxDims.height) {
+                boxDims = minBoxDims;
+            }
+
+            const forecast = result.forecast;
+            const message = result.message;
+            
+            // Créez un format de texte pour afficher les résultats de manière lisible
+            let resultText = `
+                📦 Dimensions optimales de la boîte pour ${numProducts} produit(s) : ${boxDims.length.toFixed(1)} x ${boxDims.width.toFixed(1)} x ${boxDims.height.toFixed(1)}
+                💰 Pour 100 colis envoyés, vous économisez : ${forecast.savings.toFixed(2)} €
+                🌳 Nombre d'arbres sauvés : ${forecast.trees_saved.toFixed(1)}
+                🚀 Basé sur les 250 colis que vous avez envoyés l'année dernière, et sur vos ventes actuelles, une prévision de 450 colis cette année, vous pourriez économiser jusqu'à ${forecast.forecasted_savings.toFixed(2)} € et sauver jusqu'à ${forecast.forecasted_trees_saved.toFixed(1)} arbres.
+                Merci de contribuer à un avenir plus durable ! 🌍💚
+            `;
+            
+            document.getElementById('result_content').innerText = resultText;
+        }, 2000); 
+    })
     .catch(error => {
+        
         // Masquer l'indicateur de chargement en cas d'erreur
         document.getElementById('loading_spinner_predict').style.display = 'none';
         
