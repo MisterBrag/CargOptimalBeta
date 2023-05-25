@@ -92,7 +92,7 @@ document.getElementById('predict_form').addEventListener('submit', function (eve
     // Créer un objet FormData pour collecter les données du formulaire
     const formData = new FormData(event.target);
 
-    // Calculer le volume total des produits et ajouter 20% d'espace supplémentaire
+    // Calculer le volume total des produits et ajouter 30% d'espace supplémentaire
     let totalVolume = 0;
     for (let i = 1; i <= numProducts; i++) {
         const width = formData.get(`product_width_${i}`);
@@ -100,7 +100,7 @@ document.getElementById('predict_form').addEventListener('submit', function (eve
         const depth = formData.get(`product_depth_${i}`);
         totalVolume += width * height * depth;
     }
-    totalVolume *= 1.2;
+    totalVolume *= 1.3;
 
     // Convertir le volume total en dimensions de boîte (longueur, largeur, hauteur)
     const boxSide = Math.cbrt(totalVolume);
