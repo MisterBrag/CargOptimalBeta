@@ -19,6 +19,16 @@
         <div class="step" id="box_groups">
             <p style=" color : black" >Merci de bien utilisé des points "." et non des virgules ","  dans les champs des dimensions.</p>
         </div>
+        <div class="step">
+            <label for="tutorial">Besoin d'aider pour faire les mesures de vos produits ? :</label>
+            <button id="tutorial">Jouer le tutoriel</button>
+            <audio id="audio-tuto1" style="display: none;">
+                <source src="/audio/Mesure.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        
+        
         <div class="step" id="aggregated_features_container">
             <button class="button button-black" onclick="calculateAndDownload()">Calculer et télécharger les résultats</button>
         </div>
@@ -157,6 +167,12 @@ async function calculateAndDownload() {
     URL.revokeObjectURL(url);
 }, 100);
 }
+
+document.getElementById('tutorial').addEventListener('click', function() {
+    const audio = document.getElementById('audio-tuto1');
+    audio.play();
+});
+
 
 </script>
 </body>
