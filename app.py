@@ -219,5 +219,10 @@ def documentation():
     return render_template('documentation.html')
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     #serve(app, host="0.0.0.0", port=8080)
     app.run(debug=True)
+=======
+    serve(app, host="0.0.0.0", port=8080)
+    #app.run(debug=True)
+>>>>>>> b1d9360e32e829ac0b66a2aeb2f25c758f45c118
