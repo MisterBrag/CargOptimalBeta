@@ -15,14 +15,16 @@
     <section class="container">
         <h2>Modèles disponibles</h2>
         <div class="model">
-            <h3>Modèle 1</h3>
-            <p>Description du modèle 1.</p>
-            <a href="/path/to/model1.pkl">Télécharger le modèle 1</a>
+            <h3>Modèle Amazon</h3>
+            <p>Pour une boutique générale </p>
+            <p>Version non pertinante (en cours de formation) </p>
+            <a href="{{ url_for('download_model', filename='Model_Amazon.pickle') }}">Télécharger le modèle 1</a>
         </div>
         <div class="model">
-            <h3>Modèle 2</h3>
-            <p>Description du modèle 2.</p>
-            <a href="/path/to/model2.pkl">Télécharger le modèle 2</a>
+            <h3>Modèle Health & Wellness</h3>
+            <p>Pour une boutique de Fitness</p>
+            <p>Version non pertinante (en cours de formation) </p>
+            <a href="{{ url_for('download_model', filename='Model_HealthWellness.pickle') }}">Télécharger le modèle 2</a>
         </div>
         <!-- Ajoutez ici d'autres modèles disponibles -->
     </section>

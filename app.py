@@ -100,8 +100,29 @@ def prediction():
     return render_template("prediction.html")
 
 
-# Supposons que les fichiers soient enregistrés dans un dossier appelé "output_files"
-output_folder = "output_files"
+@app.route('/analyse_resultats')
+def analyse_resultats():
+    return render_template('analyse_resultats.html')
+
+@app.route('/model')
+def modelcommunity():
+    return render_template('model.html')
+
+@app.route('/model/<path:filename>')
+def download_model(filename):
+    return send_from_directory('model', filename, as_attachment=True)
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(output_folder, filename, as_attachment=True)
+
+@app.route('/documentation')
+def documentation():
+    return render_template('documentation.html')
+
+
+# Supposons que les fichiers soient enregistrés dans un dossier appelé "model"
+output_folder = "model"
 
 # Créer le répertoire s'il n'existe pas
 if not os.path.exists(output_folder):
@@ -131,9 +152,7 @@ def train_sa():
     <a href="/download/{model_filename}">Cliquez ici pour télécharger le modèle</a> <br/>
     """
 
-@app.route('/download/<filename>')
-def download_file(filename):
-    return send_from_directory(output_folder, filename, as_attachment=True)
+
 
 @app.route('/predict_sa', methods=['POST'])
 def predict_sa():
@@ -206,23 +225,8 @@ def predict_sa():
 
     return jsonify(result), 200    
 
-@app.route('/analyse_resultats')
-def analyse_resultats():
-    return render_template('analyse_resultats.html')
 
-@app.route('/model')
-def modelcommunity():
-    return render_template('model.html')
-
-@app.route('/documentation')
-def documentation():
-    return render_template('documentation.html')
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     #serve(app, host="0.0.0.0", port=8080)
     app.run(debug=True)
-=======
-    serve(app, host="0.0.0.0", port=8080)
-    #app.run(debug=True)
->>>>>>> b1d9360e32e829ac0b66a2aeb2f25c758f45c118
