@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 import uuid
 import os
-#from waitress import serve
+from waitress import serve
 
 app = Flask(__name__)
 
@@ -228,5 +228,5 @@ def predict_sa():
 
 
 if __name__ == '__main__':
-    #serve(app, host="0.0.0.0", port=8080)
-    app.run(debug=True)
+    serve(app, host="0.0.0.0", port=8080)
+
