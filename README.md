@@ -6,7 +6,6 @@
 - **Utilisation de l'application**
 - **Structure du projet**
 - **Guide du fichier CSV**
-- **Paramétrage**
 - **Architecture**
 - **Contribuer au projet**
 - **Licence et crédits**
